@@ -21,5 +21,5 @@ export async function saveAnswerFeedback(_payload) {
 }
 
 export async function getFeedbackForAnswer(_opts = {}) {
-  return '【PORTFOLIO STUB】Feedback generation is disabled in this public snapshot.';
+  return "【PORTFOLIO STUB】Feedback generation is disabled in this public snapshot.";
 }

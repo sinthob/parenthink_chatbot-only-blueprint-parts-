@@ -4,7 +4,7 @@
 // snapshot we keep the interface but return deterministic pseudo-embeddings.
 
 function normalizeText(text) {
-  return (text || '').toString().trim().toLowerCase();
+  return (text || "").toString().trim().toLowerCase();
 }
 
 function hash32(str) {
@@ -42,7 +42,7 @@ export async function getEmbeddings(texts) {
 const embeddingCache = new Map(); // key: normalized text, value: number[]
 
 function normalizeKey(text) {
-  return (text || '').toString().trim().toLowerCase();
+  return (text || "").toString().trim().toLowerCase();
 }
 
 export async function getEmbeddingsCached(texts) {
@@ -85,7 +85,12 @@ export async function getEmbeddingsCached(texts) {
 }
 
 export function cosineSimilarity(vecA, vecB) {
-  if (!Array.isArray(vecA) || !Array.isArray(vecB) || vecA.length === 0 || vecB.length === 0) {
+  if (
+    !Array.isArray(vecA) ||
+    !Array.isArray(vecB) ||
+    vecA.length === 0 ||
+    vecB.length === 0
+  ) {
     return 0;
   }
   const dotProduct = vecA.reduce((sum, a, i) => sum + a * vecB[i], 0);
@@ -94,11 +99,18 @@ export function cosineSimilarity(vecA, vecB) {
   return normA && normB ? dotProduct / (normA * normB) : 0;
 }
 
-
 export async function selectBestFaqByEmbedding(userObj, candidateFaqs) {
   // กรอง null/undefined/'' ออกจาก userAnswer และ user_answer
-  const cleanFaqs = candidateFaqs.filter(faq => faq.user_answer !== null && faq.user_answer !== undefined && faq.user_answer !== '');
-  const texts = [userObj.userAnswer, ...cleanFaqs.map(faq => faq.user_answer)].filter(x => x !== null && x !== undefined && x !== '');
+  const cleanFaqs = candidateFaqs.filter(
+    (faq) =>
+      faq.user_answer !== null &&
+      faq.user_answer !== undefined &&
+      faq.user_answer !== "",
+  );
+  const texts = [
+    userObj.userAnswer,
+    ...cleanFaqs.map((faq) => faq.user_answer),
+  ].filter((x) => x !== null && x !== undefined && x !== "");
 
   const embeddings = await getEmbeddingsCached(texts);
 

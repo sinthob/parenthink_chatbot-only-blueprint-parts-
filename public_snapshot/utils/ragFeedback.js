@@ -10,16 +10,24 @@
 // - schema-specific SQL
 // - verbose logs that could leak user data
 
-import { defaultLLMClient, defaultModelName, generationConfig } from './llmClient.js';
+import {
+  defaultLLMClient,
+  defaultModelName,
+  generationConfig,
+} from "./llmClient.js";
 
 // Re-exports so index.js can keep the same imports.
-export { defaultLLMClient as vertexAI, defaultModelName as modelName, generationConfig };
+export {
+  defaultLLMClient as vertexAI,
+  defaultModelName as modelName,
+  generationConfig,
+};
 
 export async function searchRelevantContextForFeedback(_prompt, _opts = {}) {
   return {
-    contextText: '',
+    contextText: "",
     confidence: 0,
-    source: 'portfolio_stub'
+    source: "portfolio_stub",
   };
 }
 
@@ -27,17 +35,30 @@ export async function searchRelevantContextForFeedback(_prompt, _opts = {}) {
 // EF skills. For the snapshot we keep the function signature but do not enforce
 // any domain-specific constraints.
 export function validateEFSkillsInResponse(text, _expectedEfSkills = null) {
-  return typeof text === 'string' ? text : String(text ?? '');
+  return typeof text === "string" ? text : String(text ?? "");
 }
 
-export async function getRagFeedback(prompt, _dayNumber = null, _weekNumber = null, _questionOrder = null, _subQuestionId = null, _subOrder = null) {
-  const safePrompt = typeof prompt === 'string' ? prompt : String(prompt ?? '');
-  const chat = defaultLLMClient.chats.create({ model: defaultModelName, config: generationConfig });
+export async function getRagFeedback(
+  prompt,
+  _dayNumber = null,
+  _weekNumber = null,
+  _questionOrder = null,
+  _subQuestionId = null,
+  _subOrder = null,
+) {
+  const safePrompt = typeof prompt === "string" ? prompt : String(prompt ?? "");
+  const chat = defaultLLMClient.chats.create({
+    model: defaultModelName,
+    config: generationConfig,
+  });
 
   // We intentionally do not return the prompt or any extracted content.
-  let result = '';
+  let result = "";
   for await (const chunk of chat.sendMessageStream({ message: safePrompt })) {
     if (chunk?.text) result += chunk.text;
   }
-  return result || '【PORTFOLIO STUB】RAG feedback is disabled in this public snapshot.';
+  return (
+    result ||
+    "【PORTFOLIO STUB】RAG feedback is disabled in this public snapshot."
+  );
 }

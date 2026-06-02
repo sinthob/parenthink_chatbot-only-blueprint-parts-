@@ -16,11 +16,11 @@ const dbClient = {
       async query(_sql, _params) {
         return emptyResult();
       },
-      release() {}
+      release() {},
     };
   },
   async end() {},
-  on() {}
+  on() {},
 };
 
 export default dbClient;

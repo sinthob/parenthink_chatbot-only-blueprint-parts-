@@ -4,7 +4,7 @@
 // prompts, model selection, and provider credentials.
 
 function asText(value) {
-  return typeof value === 'string' ? value : String(value ?? '');
+  return typeof value === "string" ? value : String(value ?? "");
 }
 
 /**
@@ -22,17 +22,17 @@ export function createLLMClient() {
             yield {
               text:
                 `【PORTFOLIO STUB】(model=${chosenModel}) ข้อความนี้เป็นผลลัพธ์จำลอง ` +
-                `เพื่อโชว์การไหลของระบบ (ไม่มีการเรียก LLM จริง และไม่มี prompt จริงใน repo สาธารณะ)`
+                `เพื่อโชว์การไหลของระบบ (ไม่มีการเรียก LLM จริง และไม่มี prompt จริงใน repo สาธารณะ)`,
             };
-          }
+          },
         };
-      }
-    }
+      },
+    },
   };
 }
 
 export function getDefaultModelName() {
-  return process.env.LLM_MODEL || 'portfolio-stub-model';
+  return process.env.LLM_MODEL || "portfolio-stub-model";
 }
 
 export const generationConfig = {
@@ -41,8 +41,8 @@ export const generationConfig = {
   topP: 1,
   seed: 0,
   systemInstruction: {
-    parts: [{ text: '[SYSTEM_PROMPT_REDACTED_FOR_PORTFOLIO]' }]
-  }
+    parts: [{ text: "[SYSTEM_PROMPT_REDACTED_FOR_PORTFOLIO]" }],
+  },
 };
 
 export const defaultLLMClient = createLLMClient();

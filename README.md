@@ -5,7 +5,6 @@
 ## What's inside
 
 - `public_snapshot/` — โค้ดตัวอย่างที่ “ตัด/ทำ stub” ส่วน business + DB/AI integrations เพื่อเก็บความลับ
-- `PORTFOLIO_EXTRACTION_PLAN.md` — แผนและกติกา redaction/stub ที่ใช้สร้าง snapshot นี้
 
 ## Start here
 
