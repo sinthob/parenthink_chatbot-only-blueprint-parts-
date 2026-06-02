@@ -1,0 +1,26 @@
+# Portfolio repo root gitignore
+
+# env / secrets
+.env
+.env.*
+*.env
+
+# deps
+node_modules/
+
+# logs
+*.log
+logs/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+Desktop.ini
+.vscode/
+.idea/
+.history/
+
+# build output
+build/
+dist/
+coverage/
