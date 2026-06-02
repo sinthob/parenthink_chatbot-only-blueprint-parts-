@@ -4,6 +4,7 @@
 
 > [!IMPORTANT]
 > **Portfolio Snapshot Notice (EN/TH):** This folder is a **portfolio snapshot / architecture showcase** (not the full production project).
+>
 > - Business-specific content, data, and real integrations are **removed or stubbed** to keep them confidential.
 > - DB / LLM / RAG / Embedding / external forms may be disabled or simulated.
 > - No secrets/credentials are included.
@@ -396,58 +397,17 @@ This repository is a production-derived codebase with a **manual-first validatio
 
 Use this as a regression checklist after each refactor session.
 
-1. **Onboarding start**
-   **Precondition:** New user (no DB row) or user has `profile_step` set.  
-   **Input:** Follow event or any text.  
-   **Expected:** Bot prompts for the next required profile field and does not enter activity flow.
-   - to make sure user put all neccessary infomation before start the program \*
-
-2. **Start today’s activity**
-   **Precondition:** Registered user, not in activity.  
-   **Input:** `เริ่มกิจกรรมวันนี้`  
-   **Expected:** Sets daily flags (`has_started_today`, `is_in_activity`) and replies with the first question / start prompt.
-
-3. **Guard: answer requires activity started**
-   **Precondition:** Registered user, `has_started_today=false` and `is_in_activity=false`.  
-   **Input:** Any answer-like text to a question type that requires activity state.  
-   **Expected:** Bot replies with “กรุณากด "เริ่มกิจกรรมวันนี้" ก่อนค่ะ” plus a quick reply button.
-   - to make sure users has to check which activities they're currently on (which day and whcich week) since backend have to check whatever user answer to which question, this ensure the state users are in.
-
-4. **Confirm pending answer — yes**
-   **Precondition:** Pending confirmation is shown.  
-   **Input:** `ใช่ ส่งเลย`  
-   **Expected:** Pending answer is persisted to the correct table, feedback is generated/sent if applicable, and the bot advances pointers.
-
-5. **Game flow — Yes/No sub-question**
-   **Precondition:** User is in a game question (`question_type=game`) and `current_sub_question_order` points to a Yes/No sub-question.  
-   **Input:** Tap quick reply (e.g., “เคย/ไม่เคย”).  
-   **Expected:** Sub-answer is saved, pointer advances to the next sub-question, and the bot replies with the next sub prompt.
-
-6. **Game flow — Describe/Next**
-   **Precondition:** User is in a game sub-question of type describe.  
-   **Input:** `ไปยังคำถามถัดไป`  
-   **Expected:** Bot advances without requiring a text answer and serves the next sub-question.
-   - sometimes put all describe about the question in one buble can be hard to read, but if separate to another bubble bot can confuse if it another question or not. We can set that bubble into "descrivbe" type so bot know it just information and ready for the next real question.
-
-7. **Stuck-state recovery after midnight reset**
-   **Precondition:** User has question pointers (e.g., `current_question_number != 1` or `current_sub_question_order != null`) but daily flags were reset.  
-   **Input:** Any text message.  
-   **Expected:** Bot offers resume vs restart; resume restores flags and replays the current pending question/sub-question.
-
-   when users do the activities, bot have to check many flags to ensure which question users are currently on. ( such as current_question_number, current_sub_question_order, is_in_activity, has_started_today ). But sometimes users just leave the activities and there will be many problems later (such as, user comeback later and forget the activity and want to restart or some update affect users flags and it can be crash)
-   so i added logic to always check users'flags
-   to prevent bugs and give users chocies to resume or restart the activity in the same time.
-
-8. [ only for reserch period, will remove this after fully lunch to public ]
-   **Central timeline gating (ahead of schedule)**
-   **Precondition:** User is ahead of `central_timeline` and is not admin.  
-   **Input:** Activity-related commands (start/next/summary).  
-   **Expected:** Bot blocks progression and resets activity state to a safe baseline.
-
-9. **Menu/info commands are stateless**
-   **Precondition:** Any registered user.  
-   **Input:** Menu commands (about/calendar/research/contact).  
-   **Expected:** Bot replies with informational text and does not mutate activity pointers.
+| Flow                                                                                                                     | Precondition / Scenario                                                                                                               | Input                                                                 | Expected (Pass)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1) Onboarding start                                                                                                      | New user (no DB row) or user has `profile_step` set.                                                                                  | Follow event or any text.                                             | Bot prompts for the next required profile field and does not enter activity flow.<br>- to make sure user put all neccessary infomation before start the program \*                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| 2) Start today’s activity                                                                                                | Registered user, not in activity.                                                                                                     | `เริ่มกิจกรรมวันนี้`                                                  | Sets daily flags (`has_started_today`, `is_in_activity`) and replies with the first question / start prompt.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| 3) Guard: answer requires activity started                                                                               | Registered user, `has_started_today=false` and `is_in_activity=false`.                                                                | Any answer-like text to a question type that requires activity state. | Bot replies with “กรุณากด "เริ่มกิจกรรมวันนี้" ก่อนค่ะ” plus a quick reply button.<br>- to make sure users has to check which activities they're currently on (which day and whcich week) since backend have to check whatever user answer to which question, this ensure the state users are in.                                                                                                                                                                                                                                                                                                                                                                                                    |
+| 4) Confirm pending answer — yes                                                                                          | Pending confirmation is shown.                                                                                                        | `ใช่ ส่งเลย`                                                          | Pending answer is persisted to the correct table, feedback is generated/sent if applicable, and the bot advances pointers.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| 5) Game flow — Yes/No sub-question                                                                                       | User is in a game question (`question_type=game`) and `current_sub_question_order` points to a Yes/No sub-question.                   | Tap quick reply (e.g., “เคย/ไม่เคย”).                                 | Sub-answer is saved, pointer advances to the next sub-question, and the bot replies with the next sub prompt.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| 6) Game flow — Describe/Next                                                                                             | User is in a game sub-question of type describe.                                                                                      | `ไปยังคำถามถัดไป`                                                     | Bot advances without requiring a text answer and serves the next sub-question.<br>- sometimes put all describe about the question in one buble can be hard to read, but if separate to another bubble bot can confuse if it another question or not. We can set that bubble into "descrivbe" type so bot know it just information and ready for the next real question.                                                                                                                                                                                                                                                                                                                              |
+| 7) Stuck-state recovery after midnight reset                                                                             | User has question pointers (e.g., `current_question_number != 1` or `current_sub_question_order != null`) but daily flags were reset. | Any text message.                                                     | Bot offers resume vs restart; resume restores flags and replays the current pending question/sub-question.<br><br>when users do the activities, bot have to check many flags to ensure which question users are currently on. ( such as current_question_number, current_sub_question_order, is_in_activity, has_started_today ). But sometimes users just leave the activities and there will be many problems later (such as, user comeback later and forget the activity and want to restart or some update affect users flags and it can be crash)<br>so i added logic to always check users'flags<br>to prevent bugs and give users chocies to resume or restart the activity in the same time. |
+| 8) [ only for reserch period, will remove this after fully lunch to public ] Central timeline gating (ahead of schedule) | User is ahead of `central_timeline` and is not admin.                                                                                 | Activity-related commands (start/next/summary).                       | Bot blocks progression and resets activity state to a safe baseline.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| 9) Menu/info commands are stateless                                                                                      | Any registered user.                                                                                                                  | Menu commands (about/calendar/research/contact).                      | Bot replies with informational text and does not mutate activity pointers.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 
 ---
 
@@ -724,14 +684,14 @@ User sends message → tryAcquireUserLock(userId)
 
 ความคืบหน้าทั้งหมดถูกเก็บลง PostgreSQL ทุก step:
 
-| Field                        | Purpose                                        |
-| ---------------------------- | ---------------------------------------------- |
-| `current_week`               | ผู้ใช้อยู่สัปดาห์ที่เท่าไร                    |
-| `current_day`                | ผู้ใช้อยู่วันไหนของสัปดาห์นั้น                |
-| `current_question_number`    | ผู้ใช้อยู่ข้อคำถามหลักข้อที่เท่าไร            |
-| `current_sub_question_order` | ผู้ใช้อยู่คำถามย่อยข้อที่เท่าไร (โหมดเกม)     |
-| `is_in_activity`             | ขณะนี้ผู้ใช้อยู่ระหว่างทำกิจกรรมหรือไม่        |
-| `has_started_today`          | ผู้ใช้เริ่มกิจกรรมของ “วันนี้” แล้วหรือยัง     |
+| Field                        | Purpose                                    |
+| ---------------------------- | ------------------------------------------ |
+| `current_week`               | ผู้ใช้อยู่สัปดาห์ที่เท่าไร                 |
+| `current_day`                | ผู้ใช้อยู่วันไหนของสัปดาห์นั้น             |
+| `current_question_number`    | ผู้ใช้อยู่ข้อคำถามหลักข้อที่เท่าไร         |
+| `current_sub_question_order` | ผู้ใช้อยู่คำถามย่อยข้อที่เท่าไร (โหมดเกม)  |
+| `is_in_activity`             | ขณะนี้ผู้ใช้อยู่ระหว่างทำกิจกรรมหรือไม่    |
+| `has_started_today`          | ผู้ใช้เริ่มกิจกรรมของ “วันนี้” แล้วหรือยัง |
 
 ถ้าผู้ใช้ปิดแชตกลางกิจกรรม แล้วกลับมาอีกหลายชั่วโมง ระบบจะพากลับไปที่ตำแหน่งเดิมได้ทันที — ไม่ต้องเริ่มใหม่
 
@@ -809,23 +769,23 @@ Embedding_Server_wangchanberta/
 โปรเจกต์นี้จัดโครงแบบ **Chain-of-Responsibility + Modular Handler**
 `handleEvent` ใน `index.js` จะทำหน้าที่เป็น orchestrator: เรียก handler ตามลำดับความสำคัญ และหยุดทันทีเมื่อ handler ใดรับผิดชอบ message นั้น ๆ แล้ว (handler ที่ไม่เกี่ยวจะคืน `null` เพื่อส่งต่อให้ตัวถัดไป)
 
-| Folder / File                     | Architectural Role                                                                                              | Separation Rationale                                                                                                                   |
-| --------------------------------- | --------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `index.js`                        | **Orchestrator** — webhook entry point, user lock, central timeline gating, stuck-state recovery, handler chain | รวม cross-cutting concerns (auth/locking/gating) ที่ต้องรันก่อน logic อื่นเสมอ                                                         |
-| `handlers/`                       | **Domain Handlers** — แต่ละไฟล์ดูแล flow ฝั่งผู้ใช้หนึ่งบริบท                                                     | แยกตาม _user intent / conversation state_ ไม่ใช่ตามชนิดคำถาม; 1 handler = 1 context การสนทนา                                          |
-| `handlers/onboardingHandler.js`   | ดูแล flow ลงทะเบียน `profile_step` (multi-turn)                                                                | แยกเพื่อให้มัน “ขัดจังหวะ” flow อื่นได้เสมอเมื่อผู้ใช้ยังลงทะเบียนไม่ครบ                                                           |
-| `handlers/menuHandler.js`         | ดูแลคำสั่งข้อมูลคงที่ (about/calendar/research/contact…)                                                         | เป็น read-only ไม่มี side-effects ฝั่ง DB; ปลอดภัยที่จะเรียกได้ทั้งช่วง buttons stage และ fallback stage                              |
-| `handlers/adminHandler.js`        | ดูแล flow ของ admin (เลือกวัน/สัปดาห์)                                                                          | กันไม่ให้ logic admin ไปรบกวนผู้ใช้ทั่วไป; gated ด้วย `user.is_admin`                                                                  |
-| `handlers/activityHandler.js`     | ดูแล lifecycle กิจกรรม (start → answer loop → summary → pending confirm → game sub-questions)                  | โดเมนใหญ่ที่สุด; เป็นเจ้าของการ mutate state สำคัญ (`has_started_today`, `is_in_activity`, `current_question_number`)                |
-| `handlers/gameHandler.js`         | ดูแล flow โหมดเกม + สรุป feedback รวม                                                                            | แยกเพราะเกมใช้ pointer เพิ่ม (`current_sub_question_order`) และมี DB state หลายขั้น                                                   |
-| `utils/`                          | **Infrastructure / Cross-cutting Utilities**                                                                    | แยกตาม _ความสามารถทางเทคนิค_ ไม่ใช่ฟีเจอร์; แต่ละ util จะ stateless หรือคุม resource ร่วมอย่างเดียว                                 |
-| `utils/ragFeedback.js`            | pipeline RAG (retrieval + AI reformulation)                                                                     | แยกเป็นฟังก์ชัน async ที่ไม่รู้จัก LINE และไม่ยุ่ง state ผู้ใช้                                                                         |
-| `utils/embeddingClient.js`        | client WangchanBERTa + in-memory cache                                                                          | แยกเพื่อคุมอายุ cache ให้เป็น lifecycle ของ service ไม่ผูกกับ request                                                                   |
-| `utils/llmClient.js`              | abstraction ของ LLM (OpenAI / Vertex AI)                                                                        | logic สลับ provider อยู่ที่เดียว ทำให้ caller ไม่ผูกกับ provider                                                                        |
-| `utils/userLock.js`               | mutex ต่อผู้ใช้ (TTL + auto-refresh)                                                                             | แยกเพราะต้อง acquire lock ก่อน logic ธุรกิจทุกอย่างเสมอ                                                                                |
-| `utils/lineClient.js`             | helper ของ LINE API — sanitize, truncate label, batch split, reply fallback                                     | รวมกฎความปลอดภัยของ LINE API ไว้จุดเดียว เพื่อไม่ให้ handler ต้องเขียนซ้ำ                                                                |
-| `utils/dateHelpers.js`            | util เวลา/เขตเวลา (`Intl`-based ไม่มี deps เพิ่ม)                                                                 | แยกเพื่อไม่ต้องทำซ้ำ logic timezone ระหว่าง cron/gating/handlers                                                                       |
-| `Embedding_Server_wangchanberta/` | **External Microservice** — Python/FastAPI embedding server                                                     | deploy แยกจาก Node.js เพื่ออัปเกรด/สลับโมเดล embedding ได้โดยไม่ต้องแตะตัวบอทหลัก                                                      |
+| Folder / File                     | Architectural Role                                                                                              | Separation Rationale                                                                                                  |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `index.js`                        | **Orchestrator** — webhook entry point, user lock, central timeline gating, stuck-state recovery, handler chain | รวม cross-cutting concerns (auth/locking/gating) ที่ต้องรันก่อน logic อื่นเสมอ                                        |
+| `handlers/`                       | **Domain Handlers** — แต่ละไฟล์ดูแล flow ฝั่งผู้ใช้หนึ่งบริบท                                                   | แยกตาม _user intent / conversation state_ ไม่ใช่ตามชนิดคำถาม; 1 handler = 1 context การสนทนา                          |
+| `handlers/onboardingHandler.js`   | ดูแล flow ลงทะเบียน `profile_step` (multi-turn)                                                                 | แยกเพื่อให้มัน “ขัดจังหวะ” flow อื่นได้เสมอเมื่อผู้ใช้ยังลงทะเบียนไม่ครบ                                              |
+| `handlers/menuHandler.js`         | ดูแลคำสั่งข้อมูลคงที่ (about/calendar/research/contact…)                                                        | เป็น read-only ไม่มี side-effects ฝั่ง DB; ปลอดภัยที่จะเรียกได้ทั้งช่วง buttons stage และ fallback stage              |
+| `handlers/adminHandler.js`        | ดูแล flow ของ admin (เลือกวัน/สัปดาห์)                                                                          | กันไม่ให้ logic admin ไปรบกวนผู้ใช้ทั่วไป; gated ด้วย `user.is_admin`                                                 |
+| `handlers/activityHandler.js`     | ดูแล lifecycle กิจกรรม (start → answer loop → summary → pending confirm → game sub-questions)                   | โดเมนใหญ่ที่สุด; เป็นเจ้าของการ mutate state สำคัญ (`has_started_today`, `is_in_activity`, `current_question_number`) |
+| `handlers/gameHandler.js`         | ดูแล flow โหมดเกม + สรุป feedback รวม                                                                           | แยกเพราะเกมใช้ pointer เพิ่ม (`current_sub_question_order`) และมี DB state หลายขั้น                                   |
+| `utils/`                          | **Infrastructure / Cross-cutting Utilities**                                                                    | แยกตาม _ความสามารถทางเทคนิค_ ไม่ใช่ฟีเจอร์; แต่ละ util จะ stateless หรือคุม resource ร่วมอย่างเดียว                   |
+| `utils/ragFeedback.js`            | pipeline RAG (retrieval + AI reformulation)                                                                     | แยกเป็นฟังก์ชัน async ที่ไม่รู้จัก LINE และไม่ยุ่ง state ผู้ใช้                                                       |
+| `utils/embeddingClient.js`        | client WangchanBERTa + in-memory cache                                                                          | แยกเพื่อคุมอายุ cache ให้เป็น lifecycle ของ service ไม่ผูกกับ request                                                 |
+| `utils/llmClient.js`              | abstraction ของ LLM (OpenAI / Vertex AI)                                                                        | logic สลับ provider อยู่ที่เดียว ทำให้ caller ไม่ผูกกับ provider                                                      |
+| `utils/userLock.js`               | mutex ต่อผู้ใช้ (TTL + auto-refresh)                                                                            | แยกเพราะต้อง acquire lock ก่อน logic ธุรกิจทุกอย่างเสมอ                                                               |
+| `utils/lineClient.js`             | helper ของ LINE API — sanitize, truncate label, batch split, reply fallback                                     | รวมกฎความปลอดภัยของ LINE API ไว้จุดเดียว เพื่อไม่ให้ handler ต้องเขียนซ้ำ                                             |
+| `utils/dateHelpers.js`            | util เวลา/เขตเวลา (`Intl`-based ไม่มี deps เพิ่ม)                                                               | แยกเพื่อไม่ต้องทำซ้ำ logic timezone ระหว่าง cron/gating/handlers                                                      |
+| `Embedding_Server_wangchanberta/` | **External Microservice** — Python/FastAPI embedding server                                                     | deploy แยกจาก Node.js เพื่ออัปเกรด/สลับโมเดล embedding ได้โดยไม่ต้องแตะตัวบอทหลัก                                     |
 
 ---
 
@@ -842,54 +802,14 @@ Repo นี้มาจากระบบ production และใช้แนว
 
 ใช้เป็นรายการ regression หลัง refactor แต่ละรอบ
 
-1. **เริ่ม onboarding**
-   **เงื่อนไขก่อนเริ่ม:** ผู้ใช้ใหม่ (ยังไม่มี row ใน DB) หรือผู้ใช้มีค่า `profile_step` ค้างอยู่
-   **อินพุต:** follow event หรือข้อความใด ๆ
-   **ผลที่คาดหวัง:** บอทถามข้อมูลโปรไฟล์ที่ต้องการถัดไป และไม่พาเข้าสู่ activity flow
-   - เพื่อให้แน่ใจว่าผู้ใช้กรอกข้อมูลครบก่อนเริ่มโปรแกรม
-
-2. **เริ่มกิจกรรมของวันนี้**
-   **เงื่อนไขก่อนเริ่ม:** ผู้ใช้ลงทะเบียนแล้ว และยังไม่อยู่ใน activity
-   **อินพุต:** `เริ่มกิจกรรมวันนี้`
-   **ผลที่คาดหวัง:** เซ็ต flag รายวัน (`has_started_today`, `is_in_activity`) และตอบกลับด้วยคำถามแรก/ข้อความเริ่มต้น
-
-3. **Guard: ต้องเริ่มกิจกรรมก่อนถึงตอบได้**
-   **เงื่อนไขก่อนเริ่ม:** ผู้ใช้ลงทะเบียนแล้ว และ `has_started_today=false`, `is_in_activity=false`
-   **อินพุต:** ข้อความที่ดูเหมือนกำลังตอบคำถาม (แต่ยังไม่เริ่มกิจกรรม)
-   **ผลที่คาดหวัง:** บอทตอบ “กรุณากด "เริ่มกิจกรรมวันนี้" ก่อนค่ะ” พร้อมปุ่ม quick reply
-   - เพื่อให้ระบบรู้ว่าผู้ใช้อยู่วัน/สัปดาห์ไหน และผูกคำตอบเข้ากับคำถามที่ถูกต้อง ลดความเสี่ยง state พัง
-
-4. **ยืนยันคำตอบที่ค้าง — กดใช่**
-   **เงื่อนไขก่อนเริ่ม:** แสดงหน้าคอนเฟิร์มคำตอบแล้ว
-   **อินพุต:** `ใช่ ส่งเลย`
-   **ผลที่คาดหวัง:** บันทึกคำตอบลงตาราง/ตำแหน่งที่ถูกต้อง สร้างและส่ง feedback (ถ้ามี) และเลื่อน pointer ไปข้อถัดไป
-
-5. **เกม — คำถามย่อยแบบ Yes/No**
-   **เงื่อนไขก่อนเริ่ม:** ผู้ใช้อยู่ในคำถามแบบเกม (`question_type=game`) และ `current_sub_question_order` ชี้ไปที่คำถามย่อย Yes/No
-   **อินพุต:** กด quick reply (เช่น “เคย/ไม่เคย”)
-   **ผลที่คาดหวัง:** บันทึกคำตอบย่อย เลื่อน pointer ไปคำถามย่อยถัดไป และบอทส่ง prompt ของคำถามถัดไป
-
-6. **เกม — คำถามย่อยแบบ Describe/Next**
-   **เงื่อนไขก่อนเริ่ม:** ผู้ใช้อยู่ในคำถามย่อยประเภท describe
-   **อินพุต:** `ไปยังคำถามถัดไป`
-   **ผลที่คาดหวัง:** เลื่อน pointer โดยไม่ต้องมีคำตอบข้อความ แล้วส่งคำถามย่อยถัดไป
-   - บางครั้งใส่คำอธิบายยาว ๆ ใน bubble เดียวอ่านยาก แต่ถ้าแยกหลาย bubble จะทำให้ผู้ใช้สับสนว่าเป็นคำถามหรือไม่ จึงใช้ type describe เพื่อบอกว่าเป็น “ข้อมูล” และพร้อมไปคำถามจริงถัดไป
-
-7. **กู้ stuck state หลังรีเซ็ตตอนเที่ยงคืน**
-   **เงื่อนไขก่อนเริ่ม:** pointer ของผู้ใช้ยังค้าง (เช่น `current_question_number != 1` หรือ `current_sub_question_order != null`) แต่ daily flags ถูกรีเซ็ตแล้ว
-   **อินพุต:** ส่งข้อความใด ๆ
-   **ผลที่คาดหวัง:** บอทเสนอให้ resume หรือ restart; ถ้า resume จะเซ็ต flag กลับและ replay คำถาม/คำถามย่อยที่ค้าง
-
-   เวลา user ทำกิจกรรม ระบบต้องตรวจหลาย flag เพื่อรู้ว่าผู้ใช้อยู่ข้อไหน (เช่น `current_question_number`, `current_sub_question_order`, `is_in_activity`, `has_started_today`) แต่บางครั้งผู้ใช้ออกจากกิจกรรมไปนาน ทำให้เกิดปัญหาทีหลัง (เช่น กลับมาแล้วอยากเริ่มใหม่ หรือมีการอัปเดตบางอย่างทำให้ flag เพี้ยน)
-   ดังนั้นจึงเพิ่ม logic ตรวจ flag เสมอ เพื่อลด bug และให้ตัวเลือก resume/restart ได้พร้อมกัน
-
-8. [ เฉพาะช่วงวิจัย — จะเอาออกหลังเปิดสาธารณะเต็มรูปแบบ ]
-   **Central timeline gating (ผู้ใช้ทำล่วงหน้าเกินกำหนด)**
-   **เงื่อนไขก่อนเริ่ม:** ผู้ใช้ “นำหน้า” ตาราง `central_timeline` และไม่ใช่ admin
-   **อินพุต:** คำสั่งที่เกี่ยวกับกิจกรรม (start/next/summary)
-   **ผลที่คาดหวัง:** บอทบล็อกไม่ให้ไปต่อ และรีเซ็ต activity state ให้ปลอดภัย
-
-9. **คำสั่งเมนู/ข้อมูลต้องเป็น stateless**
-   **เงื่อนไขก่อนเริ่ม:** ผู้ใช้ลงทะเบียนแล้ว
-   **อินพุต:** คำสั่งเมนู (about/calendar/research/contact)
-   **ผลที่คาดหวัง:** บอทตอบข้อมูล และไม่ไปเปลี่ยน pointer ของกิจกรรม
+| Flow                                                                                                          | เงื่อนไข/สถานการณ์                                                                                                                     | อินพุต                                                  | เอาท์พุตที่ควรเป็น (สำเร็จแล้ว)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| ------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1) เริ่ม onboarding                                                                                           | ผู้ใช้ใหม่ (ยังไม่มี row ใน DB) หรือผู้ใช้มีค่า `profile_step` ค้างอยู่                                                                | follow event หรือข้อความใด ๆ                            | บอทถามข้อมูลโปรไฟล์ที่ต้องการถัดไป และไม่พาเข้าสู่ activity flow<br>- เพื่อให้แน่ใจว่าผู้ใช้กรอกข้อมูลครบก่อนเริ่มโปรแกรม                                                                                                                                                                                                                                                                                                                                                                                      |
+| 2) เริ่มกิจกรรมของวันนี้                                                                                      | ผู้ใช้ลงทะเบียนแล้ว และยังไม่อยู่ใน activity                                                                                           | `เริ่มกิจกรรมวันนี้`                                    | เซ็ต flag รายวัน (`has_started_today`, `is_in_activity`) และตอบกลับด้วยคำถามแรก/ข้อความเริ่มต้น                                                                                                                                                                                                                                                                                                                                                                                                                |
+| 3) Guard: ต้องเริ่มกิจกรรมก่อนถึงตอบได้                                                                       | ผู้ใช้ลงทะเบียนแล้ว และ `has_started_today=false`, `is_in_activity=false`                                                              | ข้อความที่ดูเหมือนกำลังตอบคำถาม (แต่ยังไม่เริ่มกิจกรรม) | บอทตอบ “กรุณากด "เริ่มกิจกรรมวันนี้" ก่อนค่ะ” พร้อมปุ่ม quick reply<br>- เพื่อให้ระบบรู้ว่าผู้ใช้อยู่วัน/สัปดาห์ไหน และผูกคำตอบเข้ากับคำถามที่ถูกต้อง ลดความเสี่ยง state พัง                                                                                                                                                                                                                                                                                                                                   |
+| 4) ยืนยันคำตอบที่ค้าง — กดใช่                                                                                 | แสดงหน้าคอนเฟิร์มคำตอบแล้ว                                                                                                             | `ใช่ ส่งเลย`                                            | บันทึกคำตอบลงตาราง/ตำแหน่งที่ถูกต้อง สร้างและส่ง feedback (ถ้ามี) และเลื่อน pointer ไปข้อถัดไป                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| 5) เกม — คำถามย่อยแบบ Yes/No                                                                                  | ผู้ใช้อยู่ในคำถามแบบเกม (`question_type=game`) และ `current_sub_question_order` ชี้ไปที่คำถามย่อย Yes/No                               | กด quick reply (เช่น “เคย/ไม่เคย”)                      | บันทึกคำตอบย่อย เลื่อน pointer ไปคำถามย่อยถัดไป และบอทส่ง prompt ของคำถามถัดไป                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| 6) เกม — คำถามย่อยแบบ Describe/Next                                                                           | ผู้ใช้อยู่ในคำถามย่อยประเภท describe                                                                                                   | `ไปยังคำถามถัดไป`                                       | เลื่อน pointer โดยไม่ต้องมีคำตอบข้อความ แล้วส่งคำถามย่อยถัดไป<br>- บางครั้งใส่คำอธิบายยาว ๆ ใน bubble เดียวอ่านยาก แต่ถ้าแยกหลาย bubble จะทำให้ผู้ใช้สับสนว่าเป็นคำถามหรือไม่ จึงใช้ type describe เพื่อบอกว่าเป็น “ข้อมูล” และพร้อมไปคำถามจริงถัดไป                                                                                                                                                                                                                                                           |
+| 7) กู้ stuck state หลังรีเซ็ตตอนเที่ยงคืน                                                                     | pointer ของผู้ใช้ยังค้าง (เช่น `current_question_number != 1` หรือ `current_sub_question_order != null`) แต่ daily flags ถูกรีเซ็ตแล้ว | ส่งข้อความใด ๆ                                          | บอทเสนอให้ resume หรือ restart; ถ้า resume จะเซ็ต flag กลับและ replay คำถาม/คำถามย่อยที่ค้าง<br><br>เวลา user ทำกิจกรรม ระบบต้องตรวจหลาย flag เพื่อรู้ว่าผู้ใช้อยู่ข้อไหน (เช่น `current_question_number`, `current_sub_question_order`, `is_in_activity`, `has_started_today`) แต่บางครั้งผู้ใช้ออกจากกิจกรรมไปนาน ทำให้เกิดปัญหาทีหลัง (เช่น กลับมาแล้วอยากเริ่มใหม่ หรือมีการอัปเดตบางอย่างทำให้ flag เพี้ยน)<br>ดังนั้นจึงเพิ่ม logic ตรวจ flag เสมอ เพื่อลด bug และให้ตัวเลือก resume/restart ได้พร้อมกัน |
+| 8) [ เฉพาะช่วงวิจัย — จะเอาออกหลังเปิดสาธารณะเต็มรูปแบบ ] Central timeline gating (ผู้ใช้ทำล่วงหน้าเกินกำหนด) | ผู้ใช้ “นำหน้า” ตาราง `central_timeline` และไม่ใช่ admin                                                                               | คำสั่งที่เกี่ยวกับกิจกรรม (start/next/summary)          | บอทบล็อกไม่ให้ไปต่อ และรีเซ็ต activity state ให้ปลอดภัย                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| 9) คำสั่งเมนู/ข้อมูลต้องเป็น stateless                                                                        | ผู้ใช้ลงทะเบียนแล้ว                                                                                                                    | คำสั่งเมนู (about/calendar/research/contact)            | บอทตอบข้อมูล และไม่ไปเปลี่ยน pointer ของกิจกรรม                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
